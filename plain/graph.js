@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+
 // <graphInitSnippet>
 // Create an authentication provider
 const authProvider = {
@@ -9,6 +10,8 @@ const authProvider = {
         return await getToken();
     }
 };
+
+
 
 // Initialize the Graph client
 const graphClient = MicrosoftGraph.Client.initWithMiddleware({ authProvider });
@@ -29,7 +32,7 @@ async function getPage(contentUrl) {
 
     try {
         let response = await graphClient
-        .api(contentUrl)
+            .api(contentUrl)
             //.api('/me/onenote/pages/' + id + '/$value')
             .get();
         //console.log('/me/onenote/pages/' + id + '/content');
@@ -52,6 +55,65 @@ async function getPages(url) {
             .api(url)
             .get();
         updatePage(Views.pages, response.value);
+    } catch (error) {
+        updatePage(Views.error, {
+            message: 'Error getting pages',
+            debug: error
+        });
+    }
+}
+
+async function savePages(notebook, sectiongroup, section, url) {
+    const user = JSON.parse(sessionStorage.getItem('graphUser'));
+
+    const { Reader, Writer } = window.conflux;
+    // const writer = writable.getWriter();
+
+    try {
+        let response = await graphClient
+            .api(url)
+            .get();
+
+        // More Pages?
+
+        const { readable, writable } = new Writer();
+        const writer = writable.getWriter();
+
+        // Set up streamsaver
+        const fileStream = streamSaver.createWriteStream("conflux.zip");
+
+        // Add a file
+        writer.write({
+            name: "/cat.txt",
+            stream: () => new Response("Test\n").body // response.value[0].content
+        });
+        writer.write({
+            name: "/" + notebook + "/" + sectiongroup + "/" + section,
+            directory: true
+        })
+
+        for (const page of response.value) {
+            let pageContentResponse = await graphClient.api(page.contentUrl).getStream();
+
+            const htmlAnalyzeStream = new stream.PassThrough();
+            const htmlWriteStream = new stream.PassThrough();
+            pageContentResponse.pipe(htmlAnalyzeStream);
+            pageContentResponse.pipe(htmlWriteStream);
+
+            writer.write({
+                name: "/" + notebook + "/" + sectiongroup + "/" + section + '/' + page.title + '.html',
+                stream: () => htmlWriteStream
+            })
+
+            htmlAnalyzeStream.on('data', function (chunk) {
+                console.log("Chunk: " + chunk);
+              });
+        }
+
+        readable.pipeTo(fileStream);
+
+        writer.close();
+
     } catch (error) {
         updatePage(Views.error, {
             message: 'Error getting pages',

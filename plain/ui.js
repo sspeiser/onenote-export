@@ -195,6 +195,7 @@ function showPages(pages) {
         let showPageButtonCell = createElement('td', null);
         let showPageButton = createElement('button', 'btn btn-light btn-sm mb-3', 'Show page');
         showPageButton.setAttribute('onclick', 'getPage(\'' + page.contentUrl + '\');');
+        // showPageButton.setAttribute('onclick', 'getPage(\'' + page.content + '\');');
         showPageButtonCell.appendChild(showPageButton);
         pagerow.appendChild(showPageButtonCell);
     }
@@ -258,6 +259,9 @@ function showSections(sections) {
         let showPagesButton = createElement('button', 'btn btn-light btn-sm mb-3', 'Show pages');
         showPagesButton.setAttribute('onclick', 'getPages(\'' + section.pagesUrl + '\');');
         showPagesButtonCell.appendChild(showPagesButton);
+        let savePagesButton = createElement('button', 'btn btn-light btn-sm mb-3', 'Save pages');
+        savePagesButton.setAttribute('onclick', 'savePages(\'' + section.notebookName + '\', \'' + section.sectionGroupName + '\', \'' + section.displayName + '\',\'' + section.pagesUrl + '\');');
+        showPagesButtonCell.appendChild(savePagesButton);
         pagerow.appendChild(showPagesButtonCell);
     }
 
