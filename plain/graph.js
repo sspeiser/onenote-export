@@ -69,6 +69,8 @@ async function savePages(notebook, sectiongroup, section, url) {
     const { Reader, Writer } = window.conflux;
     // const writer = writable.getWriter();
 
+    let paths = {};
+
     try {
         let response = await graphClient
             .api(url)
@@ -81,36 +83,80 @@ async function savePages(notebook, sectiongroup, section, url) {
 
         // Set up streamsaver
         const fileStream = streamSaver.createWriteStream("conflux.zip");
+        readable.pipeTo(fileStream);
 
         // Add a file
         writer.write({
             name: "/cat.txt",
             stream: () => new Response("Test\n").body // response.value[0].content
         });
+
+        const path = "/" + notebook + "/" + sectiongroup + "/" + section;
+
+
         writer.write({
-            name: "/" + notebook + "/" + sectiongroup + "/" + section,
+            name: path,
             directory: true
         })
 
         for (const page of response.value) {
-            let pageContentResponse = await graphClient.api(page.contentUrl).getStream();
+            let pageContent = await graphClient.api(page.contentUrl).get();
 
-            const htmlAnalyzeStream = new stream.PassThrough();
-            const htmlWriteStream = new stream.PassThrough();
-            pageContentResponse.pipe(htmlAnalyzeStream);
-            pageContentResponse.pipe(htmlWriteStream);
+            console.log(pageContent);
+
+            let images = pageContent.getElementsByTagName('img');
+
+            for (const image of images) {
+                let imgStream = await graphClient.api(image.getAttribute('data-fullres-src')).getStream();
+
+                const id = image.getAttribute('data-fullres-src').split(/\//).slice(0, -1).pop();
+                const extension = image.getAttribute('data-fullres-src-type').split(/\//).pop();
+                const relResourcePath = "resources" + '/' + id + '.' + extension;
+
+                image.setAttribute('src', relResourcePath);
+
+                writer.write({
+                    name: path + '/' + relResourcePath,
+                    stream: () => imgStream
+                });
+            }
+
+            let objectTags = pageContent.getElementsByTagName('object');
+            for (const o of objectTags) {
+                if (!o.hasAttribute('data')) continue;
+                if (!o.hasAttribute('type')) continue;
+                const objUrl = o.getAttribute('data');
+                const id = objUrl.split(/\//).slice(0, -1).pop();
+                const extension = o.getAttribute('type').split(/\//).pop();
+                const relResourcePath = "resources" + '/' + id + '.' + extension;
+                o.setAttribute('data', relResourcePath);
+
+                console.log('Resourcepath: ' + relResourcePath);
+
+                if(paths[relResourcePath]) {
+                    console.log('Resource already present');
+                    continue;
+                } 
+                paths[relResourcePath] = true;
+
+                let objStream = await graphClient.api(objUrl).getStream();
+                if (!objStream) continue;
+
+                
+                writer.write({
+                    name: path + '/' + relResourcePath,
+                    stream: () => objStream
+                });
+            }
+
 
             writer.write({
-                name: "/" + notebook + "/" + sectiongroup + "/" + section + '/' + page.title + '.html',
-                stream: () => htmlWriteStream
-            })
-
-            htmlAnalyzeStream.on('data', function (chunk) {
-                console.log("Chunk: " + chunk);
-              });
+                name: "/" + notebook + "/" + sectiongroup + "/" + section + '/' + page.title.replace(/\//,' ') + '.html',
+                stream: () => new Response(pageContent.documentElement.outerHTML).body
+            });
         }
 
-        readable.pipeTo(fileStream);
+
 
         writer.close();
 
