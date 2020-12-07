@@ -11,6 +11,9 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "strict": true,
+        "typeRoots": [
+            "src/@types/conflux/index.d.ts"
+        ]
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
         "module": "esnext",

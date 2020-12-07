@@ -1,32 +1,33 @@
 import React from 'react';
 import { NavLink as RouterNavLink } from 'react-router-dom';
 // import { Table } from 'reactstrap';
+import { usePromiseTracker } from "react-promise-tracker";
+import PacmanLoader from "react-spinners/PacmanLoader";
 import {
     Button
 } from 'reactstrap';
 
 import DropdownTreeSelect from "react-dropdown-tree-select";
-import { OnenotePage } from 'microsoft-graph';
+// import { OnenotePage } from 'microsoft-graph';
 import { config } from './Config';
-// import { getUserWeekCalendar } from './GraphService';
+import { getPageTree, PageTree, TreePage, savePages } from './GraphService';
 import withAuthProvider, { AuthComponentProps } from './AuthProvider';
 
 interface NotesState {
     notesLoaded: boolean;
-    notes: OnenotePage[];
-    tree: any[];
+    notesExporting: boolean;
+    tree: PageTree;
 }
 
 class Notes extends React.Component<AuthComponentProps, NotesState> {
-    selected: { 'label': string, 'children': { 'label': string, 'children': { 'label': string, 'children': { 'label': string, 'checked': boolean, 'URL': string }[] }[] }[] }[] = 
-    [{ 'label': '', 'children': [{ 'label': '', 'children': [{ 'label': '', 'children': [{ 'label': '', checked: false, 'URL': '' }] }] }] }];
+    selectedPages: TreePage[] = [];
 
     constructor(props: any) {
         super(props);
 
         this.state = {
             notesLoaded: false,
-            notes: [],
+            notesExporting: false,
             tree: []
         };
         this.exportNotes = this.exportNotes.bind(this);
@@ -34,7 +35,7 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
     }
 
     onChange(currentNode: any, selectedNodes: any) {
-        
+
         let searchNode = function (tree: any[], id: any): any {
             for (const node of tree) {
                 if (node['id'] === id)
@@ -47,7 +48,10 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
                 }
             }
         }
-        let node = searchNode(this.selected, currentNode['id']);
+        let selectedNodesTree: any[] = [];
+        for (const node of selectedNodes) {
+            selectedNodesTree.push(searchNode(this.state.tree, node['id']));
+        }
 
         let getleafs = function (tree: any[], collection: any[]) {
             for (const node of tree) {
@@ -58,38 +62,22 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
                 }
             }
         }
-        let selected: any[] = [];
-        getleafs([node], selected);
+        let selectedPages: any[] = [];
+        getleafs(selectedNodesTree, selectedPages);
 
-        for (const leaf of selected) {
-            leaf['checked'] = currentNode['checked'];
-        }
-
-
-
-        // this.selected[currentNode.notebook].children[currentNode.section].children[currentNode.child]['checked'] = currentNode.checked;
-        // console.log('onChange::', currentNode, selectedNodes);
+        this.selectedPages = selectedPages;
     }
 
     async exportNotes() {
+        this.setState({notesExporting: true});
         console.log("Exporting ...");
 
-        let getleafs = function (tree: any[], collection: any[]) {
-            for (const node of tree) {
-                if (!node["children"]) {
-                    if (node["checked"]) {
-                        collection.push(node);
-                    }
-                } else {
-                    getleafs(node["children"], collection);
-                }
-            }
+        for (const leaf of this.selectedPages) {
+            console.log("... " + leaf.label + "  " + leaf.contentURL);
         }
-        let selected: any[] = [];
-        getleafs(this.selected, selected);
-        for (const leaf of selected) {
-            console.log("... " + leaf['label'] + "  " + leaf['URL']);
-        }
+
+        savePages(this.props.getAccessToken(config.scopes), this.selectedPages);
+        this.setState({notesExporting: false});
     }
 
     async componentDidUpdate() {
@@ -101,55 +89,11 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
             var accessToken = await this.props.getAccessToken(config.scopes);
 
             // Get the user's notes
-            //var events = await getUserWeekCalendar(accessToken, this.props.user.timeZone, startOfWeek);
-            let notes = [{ 'title': 'First Note' }];
-            let tree = [
-                {
-                    "label": "VP Accounting",
-                    "id": 0,
-                    "children": [
-                        {
-                            "label": "Subsection",
-                            "id": 1,
-                            "children": [{
-                                "label": "iWay",
-                                "children": [
-                                    {
-                                        "label": "Universidad de Especialidades del Espíritu Santo",
-                                        "id": 2,
-                                        "notebook": 0,
-                                        "section": 0,
-                                        "child": 0,
-                                        "checked": false,
-                                        "URL": "hhtttt"
-                                    },
-                                    {
-                                        "label": "Marmara University",
-                                        "id": 3,
-                                        "notebook": 0,
-                                        "section": 0,
-                                        "child": 1,
-                                        "checked": false,
-                                        "URL": "hhtttt"
-                                    },
-                                    {
-                                        "label": "Baghdad College of Pharmacy",
-                                        "id": 4,
-                                        "notebook": 0,
-                                        "section": 0,
-                                        "child": 2,
-                                        "checked": false,
-                                        "URL": "hhtttt"
-                                    }
-                                ]
-                            }]
-                        }]
-                }];
-            this.selected = tree;
+            let tree = await getPageTree(accessToken);
+
             // Update the array of notes in state
             this.setState({
                 notesLoaded: true,
-                notes: notes,
                 tree: tree
             });
         }
@@ -158,19 +102,49 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
         }
     }
 
+    waiting() {
+        return <div><p>Loading your notebooks ... this can take a while</p>
+
+            <p>
+                <PacmanLoader css={"border-color: black; border: 2px;"}
+                    size={50}
+                    color={"blue"}
+                    loading={!this.state.notesLoaded} />
+            </p>
+        </div>;
+    }
+
+    exporting() {
+        return <div><p>Exporting your notebooks ... this can take a while</p>
+
+            <p>
+                <PacmanLoader css={"border-color: black; border: 2px;"}
+                    size={50}
+                    color={"blue"}
+                    loading={!this.state.notesExporting} />
+            </p>
+        </div>;
+    }
+
+    done() {
+        return <div>
+            <DropdownTreeSelect
+                data={this.state.tree}
+                showDropdown="initial"
+                // texts={{ placeholder: "Loading your notebooks" }}
+                showPartiallySelected={true}
+                onChange={this.onChange}
+                className="mdl-demo"
+            />
+            <Button color="primary" onClick={this.exportNotes}>Export your notes</Button>
+        </div>
+    }
+
     render() {
         return (
             <div>
                 <h4>Select Notebooks, Sections, Pages to export</h4>
-
-                <DropdownTreeSelect
-                    data={this.state.tree}
-                    showDropdown="initial"
-                    showPartiallySelected={true}
-                    onChange={this.onChange}
-                    className="mdl-demo"
-                />
-                <Button color="primary" onClick={this.exportNotes}>Export your notes</Button>
+                {this.state.notesLoaded ? (this.state.notesExporting ? this.exporting() : this.done()) : this.waiting() }
             </div>
         );
     }
