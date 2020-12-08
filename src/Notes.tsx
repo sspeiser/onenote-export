@@ -69,15 +69,18 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
     }
 
     async exportNotes() {
-        this.setState({notesExporting: true});
+        this.setState({ notesExporting: true });
         console.log("Exporting ...");
 
         for (const leaf of this.selectedPages) {
             console.log("... " + leaf.label + "  " + leaf.contentURL);
         }
 
-        savePages(this.props.getAccessToken(config.scopes), this.selectedPages);
-        this.setState({notesExporting: false});
+        let saveConfig = {markdown: true, html: true, resources: false, images: false};
+
+        savePages(this.props.getAccessToken(config.scopes), this.selectedPages, saveConfig)
+            .catch((error) => this.props.setError('ERROR', JSON.stringify(error)))
+            .finally(() => this.setState({ notesExporting: false }));
     }
 
     async componentDidUpdate() {
@@ -144,7 +147,7 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
         return (
             <div>
                 <h4>Select Notebooks, Sections, Pages to export</h4>
-                {this.state.notesLoaded ? (this.state.notesExporting ? this.exporting() : this.done()) : this.waiting() }
+                {this.state.notesLoaded ? (this.state.notesExporting ? this.exporting() : this.done()) : this.waiting()}
             </div>
         );
     }
