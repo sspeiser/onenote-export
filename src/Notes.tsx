@@ -76,7 +76,7 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
             console.log("... " + leaf.label + "  " + leaf.contentURL);
         }
 
-        let saveConfig = {markdown: true, html: true, resources: false, images: false};
+        let saveConfig = {markdown: true, html: true, resources: true, images: true, enex: false};
 
         savePages(this.props.getAccessToken(config.scopes), this.selectedPages, saveConfig)
             .catch((error) => this.props.setError('ERROR', JSON.stringify(error)))

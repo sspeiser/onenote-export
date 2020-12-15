@@ -163,121 +163,86 @@ export async function getUserDetails(accessToken: string) {
     return user;
 }
 
-class MD5Stream extends Writable {
-    spark: SparkMD5;
+// class MD5Stream extends Writable {
+//     spark: SparkMD5;
 
-    constructor() {
-        super({write: this._write}, new CountQueuingStrategy({ highWaterMark: 1 });
-        this.spark = new SparkMD5();
-//        var hexHash = spark.end();                      // hex hash
-      }
+//     constructor() {
+//         super({write: this._write}, new CountQueuingStrategy({ highWaterMark: 1 });
+//         this.spark = new SparkMD5();
+// //        var hexHash = spark.end();                      // hex hash
+//       }
 
-    _write(chunk, enc, next) {
-        this.spark.append(chunk);
-        next();
-    }
-}
-
-
-
-async function savePageEnex(accessToken: string, page: TreePage, pageContent: any, paths: { [key: string]: boolean }, writer: WritableStreamDefaultWriter, saveConfig: SaveConfig): Promise<any> {
-    writer.write(`${`<note><title>${page.label}</title>`}<content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>`);
-    writer.write('<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">');
-    if(saveConfig.images) {
-        let images = pageContent.getElementsByTagName('img');
-
-        for (const image of images) {
-            let src = image.getAttribute('data-fullres-src') || image.getAttribute('src');
-            if (!src) continue;
-            let type = image.getAttribute('data-fullres-src-type') || image.getAttribute('data-src-type');
-
-            const client = getAuthenticatedClient(accessToken);
-            const id = src.split(/\//).slice(0, -1).pop();
-            const extension = type.split(/\//).pop();
-            const fileName = id + '.' + extension;
-
-
-            var spark = new SparkMD5();
-            let md5stream = new Writable();
-            md5stream._write = function (chunk, encoding, done) {
-              spark.append(chunk);
-              done();
-            };
-
-            client.api(src).getStream((error, resourceStream) => {
-                resourceStream.pipe(md5stream).pipe(base64stream).on('error', console.log);
-            });
-            
-            md5stream.on('close', () => md5stream.end());
-    // writer.write({
-    //     name: path + '/' + relResourcePath,
-    //     stream: () => resourceStream
-    // });
-
-    // return relResourcePath;
-
-
-            // imgObjPromises.push(saveResource(accessToken, src, type, path, paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
-            // imgObjPromises.push(saveResource(accessToken, src, type, '', paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
-        }
-    }
+//     _write(chunk, enc, next) {
+//         this.spark.append(chunk);
+//         next();
+//     }
+// }
 
 
 
-    writer.write('<en-note');
-    for(const attribute of ['bgcolor', 'text', 'style', 'title', 'lang', 'xml:lang', 'dir']) {
-        if(pageContent.body.hasAttribute(attribute)) {
-            writer.write(` ${attribute}="${pageContent.body.getAttribute(attribute)}"`)
-        }
-    }  
-    writer.write('>');
+// async function savePageEnex(accessToken: string, page: TreePage, pageContent: any, paths: { [key: string]: boolean }, writer: WritableStreamDefaultWriter, saveConfig: SaveConfig): Promise<any> {
+//     writer.write(`${`<note><title>${page.label}</title>`}<content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>`);
+//     writer.write('<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">');
+//     if(saveConfig.images) {
+//         let images = pageContent.getElementsByTagName('img');
 
-    pageContent.body
-    if (saveConfig.html) {
-        writer.write({
-            name: '/html' + pagePath,
-            stream: () => new Response(pageContent.documentElement.outerHTML).body
-        });
-    }
-    
-    Hello, World.
-            <div>
-                    <br />
-                </div>
-                <div>
-                    <en-media alt="" type="image/jpeg" hash="dd7b6d285d09ec054e8cd6a3814ce093" />
-                </div>
-                <div>
-                    <br />
-                </div>
-        </en-note>
-        ]]>
-    </content>
-        <created>20130730T205204Z</created>
-        <updated>20130730T205624Z</updated>
-        <tag>fake-tag</tag>
-        <note-attributes>
-            <latitude>33.88394692352314</latitude>
-            <longitude>-117.9191355110099</longitude>
-            <altitude>96</altitude>
-            <author>Brett Kelly</author>
-        </note-attributes>
-        <resource>
-            <data encoding="base64">/9j/4AAQSkZJRgABAQAAAQABAAD/4gxYSUNDX1BST0ZJTEUAAQEAAAxITGlubwIQAABtbnRyUkdCIFhZ
-            WiAHzgACAAkABgAxAABhY3NwTVNGVAAAAABJRUMgc1JHQgAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLUhQ
-        <!-- ... -->
-        kfeIGT/+uufk8DpM0gyVjGfmzkgetesnUoTHJ+5Cxn86zmv4/wB75EW+QHAPUH/P9Ky+s1rtrr/wfvOm
-        dBSamnq/xPKp/hpLKmS7x4OBjgn6elee6v4OuLJirRSHb/FtyG9s9u1fR0+oTiIRvGq7W4bpisfUGk1C
-        GVWtkIyM57n1rfDY+uqigtU76ffZkUsA6iajHZ6v/P8A4B//2Q==</data>
-            <mime>image/jpeg</mime>
-            <width>1280</width>
-            <height>720</height>
-            <resource-attributes>
-                <file-name>snapshot-DAE9FC15-88E3-46CF-B744-DA9B1B56EB57.jpg</file-name>
-            </resource-attributes>
-        </resource>
-</note >
-}
+//         for (const image of images) {
+//             let src = image.getAttribute('data-fullres-src') || image.getAttribute('src');
+//             if (!src) continue;
+//             let type = image.getAttribute('data-fullres-src-type') || image.getAttribute('data-src-type');
+
+//             const client = getAuthenticatedClient(accessToken);
+//             const id = src.split(/\//).slice(0, -1).pop();
+//             const extension = type.split(/\//).pop();
+//             const fileName = id + '.' + extension;
+
+
+//             var spark = new SparkMD5();
+//             let md5stream = new Writable();
+//             md5stream._write = function (chunk, encoding, done) {
+//               spark.append(chunk);
+//               done();
+//             };
+
+//             Buffer.
+
+//             client.api(src).getStream((error, resourceStream) => {
+//                 resourceStream.pipe(md5stream).pipe(base64stream).on('error', console.log);
+//             });
+
+//             md5stream.on('close', () => md5stream.end());
+//     // writer.write({
+//     //     name: path + '/' + relResourcePath,
+//     //     stream: () => resourceStream
+//     // });
+
+//     // return relResourcePath;
+
+
+//             // imgObjPromises.push(saveResource(accessToken, src, type, path, paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
+//             // imgObjPromises.push(saveResource(accessToken, src, type, '', paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
+//         }
+//     }
+
+
+
+//     writer.write('<en-note');
+//     for(const attribute of ['bgcolor', 'text', 'style', 'title', 'lang', 'xml:lang', 'dir']) {
+//         if(pageContent.body.hasAttribute(attribute)) {
+//             writer.write(` ${attribute}="${pageContent.body.getAttribute(attribute)}"`)
+//         }
+//     }  
+//     writer.write('>');
+
+//     pageContent.body
+//     if (saveConfig.html) {
+//         writer.write({
+//             name: '/html' + pagePath,
+//             stream: () => new Response(pageContent.documentElement.outerHTML).body
+//         });
+//     }
+// }
+
 
 
 async function saveResource(accessToken: string, src: string, type: string, path: string, paths: { [key: string]: boolean; }, writer: WritableStreamDefaultWriter): Promise<string> {
@@ -296,6 +261,14 @@ async function saveResource(accessToken: string, src: string, type: string, path
     if (!resourceStream)
         return relResourcePath;
 
+    if(resourceStream instanceof ReadableStream) {
+        const a = await resourceStream.getReader().read();
+        console.log(a.value);
+        console.log(a.value.constructor);
+        //resourceStream.pipeTo(new Base64Stream().writableStream);
+        return relResourcePath;
+    }
+
     writer.write({
         name: path + '/' + relResourcePath,
         stream: () => resourceStream
@@ -307,11 +280,18 @@ async function saveResource(accessToken: string, src: string, type: string, path
 async function savePage(accessToken: string, page: TreePage, pageContent: any, paths: { [key: string]: boolean }, writer: WritableStreamDefaultWriter, saveConfig: SaveConfig): Promise<any> {
 
     if (saveConfig.enex) {
-        return savePageEnex(accessToken, page, pageContent, paths, writer, saveConfig);
+        // return savePageEnex(accessToken, page, pageContent, paths, writer, saveConfig);
     }
 
     let imgObjPromises: Promise<any>[] = [];
     const path = "/" + page.notebook + "/" + page.sectionGroup + "/" + page.section;
+    const anotherPathElementForMDorHTML = 1;
+    const resourcePathPrefix = '../'.repeat(path.split('/').map((directory) => {
+        if (directory === '.') return 0;
+        if (directory === '') return 0;
+        if (directory === '..') return -1;
+        return 1;
+    }).reduce((x: number, y: number) => x + y, anotherPathElementForMDorHTML));
 
     if (saveConfig.images) {
         let images = pageContent.getElementsByTagName('img');
@@ -321,7 +301,7 @@ async function savePage(accessToken: string, page: TreePage, pageContent: any, p
             if (!src) continue;
             let type = image.getAttribute('data-fullres-src-type') || image.getAttribute('data-src-type');
             // imgObjPromises.push(saveResource(accessToken, src, type, path, paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
-            imgObjPromises.push(saveResource(accessToken, src, type, '', paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
+            imgObjPromises.push(saveResource(accessToken, src, type, '', paths, writer).then((relResourcePath) => image.setAttribute('src', resourcePathPrefix + relResourcePath)));
         }
     }
 
@@ -333,7 +313,7 @@ async function savePage(accessToken: string, page: TreePage, pageContent: any, p
 
             const objUrl = o.getAttribute('data');
             // imgObjPromises.push(saveResource(accessToken, objUrl, o.getAttribute('type'), path, paths, writer).then((relResourcePath) => o.setAttribute('data', relResourcePath)));
-            imgObjPromises.push(saveResource(accessToken, objUrl, o.getAttribute('type'), '', paths, writer).then((relResourcePath) => o.setAttribute('data', relResourcePath)));
+            imgObjPromises.push(saveResource(accessToken, objUrl, o.getAttribute('type'), '', paths, writer).then((relResourcePath) => o.setAttribute('data', resourcePathPrefix + relResourcePath)));
         }
     }
 
@@ -394,7 +374,9 @@ export async function savePages(accessToken: string, pages: TreePage[], saveConf
     let paths: { [key: string]: boolean } = {};
 
     for (const page of pages) {
-        pagePromises.push(client.api(page.contentURL).get().then((pageContent: any) => savePage(accessToken, page, pageContent, paths, writer, saveConfig)));
+        pagePromises.push(client.api(page.contentURL).get().then((pageContent: any) =>
+            savePage(accessToken, page, pageContent, paths, writer, saveConfig)).then()
+        );
     }
     await Promise.all(pagePromises);
     writer.close();
