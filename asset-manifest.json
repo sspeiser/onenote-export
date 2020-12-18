@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/onenote-export/static/css/main.244536a1.chunk.css",
+    "main.js": "/onenote-export/static/js/main.73f2beca.chunk.js",
+    "main.js.map": "/onenote-export/static/js/main.73f2beca.chunk.js.map",
+    "runtime-main.js": "/onenote-export/static/js/runtime-main.dc5c4e18.js",
+    "runtime-main.js.map": "/onenote-export/static/js/runtime-main.dc5c4e18.js.map",
+    "static/css/2.c731d2c4.chunk.css": "/onenote-export/static/css/2.c731d2c4.chunk.css",
+    "static/js/2.bcefdba4.chunk.js": "/onenote-export/static/js/2.bcefdba4.chunk.js",
+    "static/js/2.bcefdba4.chunk.js.map": "/onenote-export/static/js/2.bcefdba4.chunk.js.map",
+    "index.html": "/onenote-export/index.html",
+    "static/css/2.c731d2c4.chunk.css.map": "/onenote-export/static/css/2.c731d2c4.chunk.css.map",
+    "static/css/main.244536a1.chunk.css.map": "/onenote-export/static/css/main.244536a1.chunk.css.map",
+    "static/js/2.bcefdba4.chunk.js.LICENSE.txt": "/onenote-export/static/js/2.bcefdba4.chunk.js.LICENSE.txt",
+    "static/media/all.css": "/onenote-export/static/media/fa-solid-900.46fdbd2d.woff"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.dc5c4e18.js",
+    "static/css/2.c731d2c4.chunk.css",
+    "static/js/2.bcefdba4.chunk.js",
+    "static/css/main.244536a1.chunk.css",
+    "static/js/main.73f2beca.chunk.js"
+  ]
+}
