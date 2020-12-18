@@ -1,75 +1,35 @@
 import { OnenotePage } from 'microsoft-graph';
-import { PageCollection, PageIterator } from '@microsoft/microsoft-graph-client';
-
-import { Writable } from 'stream';
+import { GraphRequest, PageCollection, PageIterator, Client, RetryHandlerOptions, ShouldRetry } from '@microsoft/microsoft-graph-client';
 
 import { Writer } from '@transcend-io/conflux';
 import streamSaver from "streamsaver";
 import * as ponyfill from 'web-streams-polyfill/ponyfill';
 
-import TurndownService from 'turndown';
+// import TurndownService from 'turndown';
+import Converter from 'showdown';
 
-import SparkMD5 from 'spark-md5';
+import { PageTree, TreeInternalNode, TreePage } from './PageTree';
+import { SaveConfig } from './SaveConfig';
 
 
-
-var graph = require('@microsoft/microsoft-graph-client');
-
-export interface SaveConfig {
-    markdown: boolean,
-    html: boolean,
-    resources: boolean,
-    images: boolean,
-    enex: boolean
+async function wrapAPI(graphRequest: GraphRequest): Promise<any> {
+    return new Promise((resolve, reject) => {
+        graphRequest.get((err, res) => {
+            if (err) {
+                reject(err);
+            }
+            resolve(res);
+        });
+    });
 }
-
-export type PageTree = TreeInternalNode[];
-
-export class TreeNode {
-    static undefinedId: number = 0;
-    static undefinedLabel: number = 0;
-    label: string;
-    id: any;
-
-    constructor(label: string | undefined | null, id: any) {
-        if (label == null) {
-            this.label = "undefinedLabel" + TreeNode.undefinedLabel++;
-        } else {
-            this.label = label;
-        }
-        if (id == null) {
-            this.id = "undefinedId" + TreeNode.undefinedId++;
-        } else {
-            this.id = id;
-        }
-    }
-}
-
-export class TreeInternalNode extends TreeNode {
-    children: TreeNode[] = [];
-}
-
-export class TreePage extends TreeNode {
-    contentURL: string | undefined | null;
-    notebook: string;
-    sectionGroup: string;
-    section: string;
-
-    constructor(label: string | undefined | null, id: string | undefined | null, contentURL: string | undefined | null, notebook: string, sectionGroup: string, section: string) {
-        super(label, id);
-        this.contentURL = contentURL;
-        this.notebook = notebook;
-        this.sectionGroup = sectionGroup;
-        this.section = section;
-    }
-}
-
 
 async function getPages(accessToken: string, pagesURL: string): Promise<OnenotePage[]> {
     const client = getAuthenticatedClient(accessToken);
+
     var response: PageCollection = await client
         .api(pagesURL)
         .get();
+
     if (response["@odata.nextLink"]) {
         // Presence of the nextLink property indicates more results are available
         // Use a page iterator to get all results
@@ -92,10 +52,18 @@ async function getPages(accessToken: string, pagesURL: string): Promise<OnenoteP
 export async function getPageTree(accessToken: string): Promise<PageTree> {
     const client = getAuthenticatedClient(accessToken);
 
-    let response = await client
+    // let response = await client
+    //     .api('/me/onenote/notebooks/')
+    //     .expand('sections,sectionGroups($expand=sections)')
+    //     .get()
+
+
+    let response = await wrapAPI(client
         .api('/me/onenote/notebooks/')
-        .expand('sections,sectionGroups($expand=sections)')
-        .get();
+        // .middlewareOptions([new RetryHandlerOptions(undefined, undefined, () => false)])
+        .expand('sections,sectionGroups($expand=sections)'))
+        //     .get()
+        .catch(console.log);
 
     let pageTree: PageTree = [];
     let pagePromises: Promise<any>[] = [];
@@ -139,16 +107,15 @@ export async function getPageTree(accessToken: string): Promise<PageTree> {
 }
 
 
-function getAuthenticatedClient(accessToken: string) {
+export function getAuthenticatedClient(accessToken: string) {
     // Initialize Graph client
-    const client = graph.Client.init({
+    const client = Client.init({
         // Use the provided access token to authenticate
         // requests
         authProvider: (done: any) => {
             done(null, accessToken);
         }
     });
-
     return client;
 }
 
@@ -162,88 +129,6 @@ export async function getUserDetails(accessToken: string) {
 
     return user;
 }
-
-// class MD5Stream extends Writable {
-//     spark: SparkMD5;
-
-//     constructor() {
-//         super({write: this._write}, new CountQueuingStrategy({ highWaterMark: 1 });
-//         this.spark = new SparkMD5();
-// //        var hexHash = spark.end();                      // hex hash
-//       }
-
-//     _write(chunk, enc, next) {
-//         this.spark.append(chunk);
-//         next();
-//     }
-// }
-
-
-
-// async function savePageEnex(accessToken: string, page: TreePage, pageContent: any, paths: { [key: string]: boolean }, writer: WritableStreamDefaultWriter, saveConfig: SaveConfig): Promise<any> {
-//     writer.write(`${`<note><title>${page.label}</title>`}<content><![CDATA[<?xml version="1.0" encoding="UTF-8" standalone="no"?>`);
-//     writer.write('<!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">');
-//     if(saveConfig.images) {
-//         let images = pageContent.getElementsByTagName('img');
-
-//         for (const image of images) {
-//             let src = image.getAttribute('data-fullres-src') || image.getAttribute('src');
-//             if (!src) continue;
-//             let type = image.getAttribute('data-fullres-src-type') || image.getAttribute('data-src-type');
-
-//             const client = getAuthenticatedClient(accessToken);
-//             const id = src.split(/\//).slice(0, -1).pop();
-//             const extension = type.split(/\//).pop();
-//             const fileName = id + '.' + extension;
-
-
-//             var spark = new SparkMD5();
-//             let md5stream = new Writable();
-//             md5stream._write = function (chunk, encoding, done) {
-//               spark.append(chunk);
-//               done();
-//             };
-
-//             Buffer.
-
-//             client.api(src).getStream((error, resourceStream) => {
-//                 resourceStream.pipe(md5stream).pipe(base64stream).on('error', console.log);
-//             });
-
-//             md5stream.on('close', () => md5stream.end());
-//     // writer.write({
-//     //     name: path + '/' + relResourcePath,
-//     //     stream: () => resourceStream
-//     // });
-
-//     // return relResourcePath;
-
-
-//             // imgObjPromises.push(saveResource(accessToken, src, type, path, paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
-//             // imgObjPromises.push(saveResource(accessToken, src, type, '', paths, writer).then((relResourcePath) => image.setAttribute('src', relResourcePath)));
-//         }
-//     }
-
-
-
-//     writer.write('<en-note');
-//     for(const attribute of ['bgcolor', 'text', 'style', 'title', 'lang', 'xml:lang', 'dir']) {
-//         if(pageContent.body.hasAttribute(attribute)) {
-//             writer.write(` ${attribute}="${pageContent.body.getAttribute(attribute)}"`)
-//         }
-//     }  
-//     writer.write('>');
-
-//     pageContent.body
-//     if (saveConfig.html) {
-//         writer.write({
-//             name: '/html' + pagePath,
-//             stream: () => new Response(pageContent.documentElement.outerHTML).body
-//         });
-//     }
-// }
-
-
 
 async function saveResource(accessToken: string, src: string, type: string, path: string, paths: { [key: string]: boolean; }, writer: WritableStreamDefaultWriter): Promise<string> {
     const client = getAuthenticatedClient(accessToken);
@@ -261,14 +146,6 @@ async function saveResource(accessToken: string, src: string, type: string, path
     if (!resourceStream)
         return relResourcePath;
 
-    if(resourceStream instanceof ReadableStream) {
-        const a = await resourceStream.getReader().read();
-        console.log(a.value);
-        console.log(a.value.constructor);
-        //resourceStream.pipeTo(new Base64Stream().writableStream);
-        return relResourcePath;
-    }
-
     writer.write({
         name: path + '/' + relResourcePath,
         stream: () => resourceStream
@@ -278,14 +155,9 @@ async function saveResource(accessToken: string, src: string, type: string, path
 }
 
 async function savePage(accessToken: string, page: TreePage, pageContent: any, paths: { [key: string]: boolean }, writer: WritableStreamDefaultWriter, saveConfig: SaveConfig): Promise<any> {
-
-    if (saveConfig.enex) {
-        // return savePageEnex(accessToken, page, pageContent, paths, writer, saveConfig);
-    }
-
     let imgObjPromises: Promise<any>[] = [];
     const path = "/" + page.notebook + "/" + page.sectionGroup + "/" + page.section;
-    const anotherPathElementForMDorHTML = 1;
+    const anotherPathElementForMDorHTML = 0;
     const resourcePathPrefix = '../'.repeat(path.split('/').map((directory) => {
         if (directory === '.') return 0;
         if (directory === '') return 0;
@@ -328,21 +200,46 @@ async function savePage(accessToken: string, page: TreePage, pageContent: any, p
     // Important to wait for all images and objects before writing html, otherwise src and data attributes have not been updated
     await Promise.all(imgObjPromises);
 
+    // if (saveConfig.html) {
+    //     writer.write({
+    //         name: /* '/html'  + */ pagePath,
+    //         stream: () => new Response(pageContent.documentElement.outerHTML).body
+    //     });
+    // }
+
+    // Remove all styles
+    // for(const element of pageContent.getElementsByTagName('*')) {
+    //     element.removeAttribute('style');
+    // }
     if (saveConfig.html) {
         writer.write({
-            name: '/html' + pagePath,
+            name: /* '/html'  + */ pagePath, //.replace('.html', '_nostyles.html'),
             stream: () => new Response(pageContent.documentElement.outerHTML).body
         });
     }
+
+
     if (saveConfig.markdown) {
-        let mdPath = pagePath.replace(/\.html$/, '.md');
-        var turndownService = new TurndownService();
-        let markdown = turndownService.turndown(pageContent.documentElement.outerHTML);
-        if (markdown) {
-            writer.write({
-                name: '/markdown' + mdPath,
-                stream: () => new Response(markdown).body
-            });
+        try {
+            let mdPath = pagePath.replace(/\.html$/, '.md');
+            let converter = new Converter.Converter();
+            let markdown = "";
+            if (pageContent && pageContent.body) {
+                markdown = converter.makeMarkdown(pageContent.body.innerHTML, pageContent);
+                // var turndownService = new TurndownService();
+                // let markdown = turndownService.turndown(pageContent.documentElement.outerHTML);
+            } else {
+                console.log(pageContent);
+            }
+            if (markdown) {
+                writer.write({
+                    name: /* '/markdown' + */ mdPath,
+                    stream: () => new Response(markdown).body
+                });
+            }
+        } catch (error) {
+            console.log(error);
+            return true;
         }
     }
 
@@ -352,28 +249,23 @@ async function savePage(accessToken: string, page: TreePage, pageContent: any, p
 export async function savePages(accessToken: string, pages: TreePage[], saveConfig: SaveConfig) {
     const client = getAuthenticatedClient(accessToken);
 
-
     // Set up streamsaver
     streamSaver.WritableStream = ponyfill.WritableStream
 
     let writer: WritableStreamDefaultWriter<any>;
 
-    if (!saveConfig.enex) {
-        const { readable, writable } = new Writer();
-        writer = writable.getWriter();
+    const { readable, writable } = new Writer();
+    writer = writable.getWriter();
 
-        const fileStream = streamSaver.createWriteStream("onenote-export.zip");
+    const fileStream = streamSaver.createWriteStream("onenote-export.zip");
 
-        readable.pipeTo(fileStream);
-    } else {
-        const fileStream = streamSaver.createWriteStream("onenote-export.enex");
-        writer = fileStream.getWriter();
-    }
+    readable.pipeTo(fileStream);
 
     let pagePromises: Promise<any>[] = [];
     let paths: { [key: string]: boolean } = {};
 
     for (const page of pages) {
+        if (!page.contentURL) continue;
         pagePromises.push(client.api(page.contentURL).get().then((pageContent: any) =>
             savePage(accessToken, page, pageContent, paths, writer, saveConfig)).then()
         );

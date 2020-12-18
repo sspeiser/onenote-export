@@ -94,7 +94,7 @@ export default class NavBar extends React.Component<NavBarProps, NavBarState> {
         if (this.props.isAuthenticated) {
             notesLink = (
                 <NavItem>
-                    <RouterNavLink to="/notes" className="nav-link" exact>Notes</RouterNavLink>
+                    <RouterNavLink to="./notes" className="nav-link" exact>Notes</RouterNavLink>
                 </NavItem>
             );
         }
@@ -103,18 +103,18 @@ export default class NavBar extends React.Component<NavBarProps, NavBarState> {
             <div>
                 <Navbar color="dark" dark expand="md" fixed="top">
                     <Container>
-                        <NavbarBrand href="/">OneNote Export</NavbarBrand>
+                        <NavbarBrand href="./">OneNote Export</NavbarBrand>
                         <NavbarToggler onClick={this.toggle} />
                         <Collapse isOpen={this.state.isOpen} navbar>
                             <Nav className="mr-auto" navbar>
                                 <NavItem>
-                                    <RouterNavLink to="/" className="nav-link" exact>Home</RouterNavLink>
+                                    <RouterNavLink to="./" className="nav-link" exact>Home</RouterNavLink>
                                 </NavItem>
                                 {notesLink}
                             </Nav>
                             <Nav className="justify-content-end" navbar>
                                 <NavItem>
-                                    {/* <RouterNavLink to="/" className="nav-link" exact>Donate</RouterNavLink> */}
+                                    {/* <RouterNavLink to="./" className="nav-link" exact>Donate</RouterNavLink> */}
                                     <NavLink href="https://paypal.me/mkaythx" target="_blank">
                                         <i className="fas fa-external-link-alt mr-1"></i>
                     Donate

@@ -1,17 +1,16 @@
 import React from 'react';
-import { NavLink as RouterNavLink } from 'react-router-dom';
-// import { Table } from 'reactstrap';
-import { usePromiseTracker } from "react-promise-tracker";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import {
     Button
 } from 'reactstrap';
 
 import DropdownTreeSelect from "react-dropdown-tree-select";
-// import { OnenotePage } from 'microsoft-graph';
+
 import { config } from './Config';
-import { getPageTree, PageTree, TreePage, savePages } from './GraphService';
+import { getPageTree, savePages } from './GraphService';
+import { PageTree, TreePage } from "./PageTree";
 import withAuthProvider, { AuthComponentProps } from './AuthProvider';
+import { savePagesEnex } from './OneNoteSource';
 
 interface NotesState {
     notesLoaded: boolean;
@@ -76,12 +75,27 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
             console.log("... " + leaf.label + "  " + leaf.contentURL);
         }
 
-        let saveConfig = {markdown: true, html: true, resources: true, images: true, enex: false};
+        let saveConfig = { markdown: false, html: true, resources: true, images: true, enex: false };
 
         savePages(this.props.getAccessToken(config.scopes), this.selectedPages, saveConfig)
             .catch((error) => this.props.setError('ERROR', JSON.stringify(error)))
             .finally(() => this.setState({ notesExporting: false }));
     }
+
+    async exportNotesEnex() {
+        this.setState({ notesExporting: true });
+        console.log("Exporting ...");
+
+        for (const leaf of this.selectedPages) {
+            console.log("... " + leaf.label + "  " + leaf.contentURL);
+        }
+
+        let saveConfig = { markdown: false, html: true, resources: true, images: true, enex: true };
+        savePagesEnex(this.props.getAccessToken(config.scopes), this.selectedPages, saveConfig)
+            .catch((error) => this.props.setError('ERROR', JSON.stringify(error)))
+            .finally(() => this.setState({ notesExporting: false }));
+    }
+
 
     async componentDidUpdate() {
         if (this.state.notesLoaded) {
@@ -139,7 +153,17 @@ class Notes extends React.Component<AuthComponentProps, NotesState> {
                 onChange={this.onChange}
                 className="mdl-demo"
             />
-            <Button color="primary" onClick={this.exportNotes}>Export your notes</Button>
+            <Button color="primary" onClick={this.exportNotes.bind(this)}>Export your notes as a zip file<br /> containing HTML files and resources</Button> &nbsp; &nbsp; &nbsp;<br /><br />
+            <Button color="primary" onClick={this.exportNotesEnex.bind(this)}>Export your notes as ENEX-File - <br />Evernote export format that can be<br /> imported into many note applications</Button><br />
+            <br />
+            How to proceed from here depends on which tool you want to use in the future:<br />
+            <ul>
+                <li>General purpose editor (e.g. Atom, Visual Studio Code): download zip and open directory in your editor. Maybe convert HTML files to markdown, e.g. using <a href="https://pandoc.org/demos.html" target="_blank" rel="noreferrer">pandoc, see example 12</a></li>
+                <li>Standard Notes: both ENEX and zip should be importable via the provided tools. It will not import resources.</li>
+                <li>Evernote: download ENEX and import in desktop application. Some resources and images might be damaged.</li>
+                <li>Joplin: download ENEX and import as Markdown. Sections will be converted to tags. As an alternative you can download the zip, unzip it and import the HTML directory</li>
+                <li>Anything else: download both and see which one imports better</li>
+            </ul>
         </div>
     }
 
