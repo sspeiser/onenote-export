@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/onenote-export/static/css/main.244536a1.chunk.css",
-    "main.js": "/onenote-export/static/js/main.73f2beca.chunk.js",
-    "main.js.map": "/onenote-export/static/js/main.73f2beca.chunk.js.map",
+    "main.js": "/onenote-export/static/js/main.32dd0b15.chunk.js",
+    "main.js.map": "/onenote-export/static/js/main.32dd0b15.chunk.js.map",
     "runtime-main.js": "/onenote-export/static/js/runtime-main.dc5c4e18.js",
     "runtime-main.js.map": "/onenote-export/static/js/runtime-main.dc5c4e18.js.map",
     "static/css/2.c731d2c4.chunk.css": "/onenote-export/static/css/2.c731d2c4.chunk.css",
@@ -19,6 +19,6 @@
     "static/css/2.c731d2c4.chunk.css",
     "static/js/2.bcefdba4.chunk.js",
     "static/css/main.244536a1.chunk.css",
-    "static/js/main.73f2beca.chunk.js"
+    "static/js/main.32dd0b15.chunk.js"
   ]
 }
