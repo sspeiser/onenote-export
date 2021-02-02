@@ -1,24 +1,24 @@
 {
   "files": {
     "main.css": "/onenote-export/static/css/main.244536a1.chunk.css",
-    "main.js": "/onenote-export/static/js/main.3e739743.chunk.js",
-    "main.js.map": "/onenote-export/static/js/main.3e739743.chunk.js.map",
+    "main.js": "/onenote-export/static/js/main.dfc6939a.chunk.js",
+    "main.js.map": "/onenote-export/static/js/main.dfc6939a.chunk.js.map",
     "runtime-main.js": "/onenote-export/static/js/runtime-main.dc5c4e18.js",
     "runtime-main.js.map": "/onenote-export/static/js/runtime-main.dc5c4e18.js.map",
     "static/css/2.c731d2c4.chunk.css": "/onenote-export/static/css/2.c731d2c4.chunk.css",
-    "static/js/2.5c21e8aa.chunk.js": "/onenote-export/static/js/2.5c21e8aa.chunk.js",
-    "static/js/2.5c21e8aa.chunk.js.map": "/onenote-export/static/js/2.5c21e8aa.chunk.js.map",
+    "static/js/2.61bd0642.chunk.js": "/onenote-export/static/js/2.61bd0642.chunk.js",
+    "static/js/2.61bd0642.chunk.js.map": "/onenote-export/static/js/2.61bd0642.chunk.js.map",
     "index.html": "/onenote-export/index.html",
     "static/css/2.c731d2c4.chunk.css.map": "/onenote-export/static/css/2.c731d2c4.chunk.css.map",
     "static/css/main.244536a1.chunk.css.map": "/onenote-export/static/css/main.244536a1.chunk.css.map",
-    "static/js/2.5c21e8aa.chunk.js.LICENSE.txt": "/onenote-export/static/js/2.5c21e8aa.chunk.js.LICENSE.txt",
+    "static/js/2.61bd0642.chunk.js.LICENSE.txt": "/onenote-export/static/js/2.61bd0642.chunk.js.LICENSE.txt",
     "static/media/all.css": "/onenote-export/static/media/fa-solid-900.46fdbd2d.woff"
   },
   "entrypoints": [
     "static/js/runtime-main.dc5c4e18.js",
     "static/css/2.c731d2c4.chunk.css",
-    "static/js/2.5c21e8aa.chunk.js",
+    "static/js/2.61bd0642.chunk.js",
     "static/css/main.244536a1.chunk.css",
-    "static/js/main.3e739743.chunk.js"
+    "static/js/main.dfc6939a.chunk.js"
   ]
 }
