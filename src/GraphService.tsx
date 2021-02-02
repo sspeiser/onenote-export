@@ -251,7 +251,7 @@ export async function savePages(accessToken: string, pages: TreePage[], saveConf
 
     // Set up streamsaver
     streamSaver.WritableStream = ponyfill.WritableStream
-
+    streamSaver.mitm = 'https://sspeiser.github.io/onenote-export/mitm.html';
     let writer: WritableStreamDefaultWriter<any>;
 
     const { readable, writable } = new Writer();
