@@ -1,3 +1,5 @@
+src/Config.ts
+
 # Logs
 logs
 *.log

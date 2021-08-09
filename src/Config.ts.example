@@ -1,5 +1,5 @@
 export const config = {
-    appId: 'b92f9379-9e28-4076-9ba1-5546b988b1b6',
+    appId: 'Azure App ID',
     redirectUri: 'http://localhost:3000',
     scopes: [
       'user.read',

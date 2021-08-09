@@ -1,6 +1,6 @@
 import withAuthProvider, { AuthComponentProps } from './AuthProvider';
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Redirect, useHistory } from 'react-router-dom';
 import { Container } from 'reactstrap';
 import NavBar from './NavBar';
 import ErrorMessage from './ErrorMessage';
@@ -8,6 +8,9 @@ import Welcome from './Welcome';
 import Notes from './Notes';
 import 'bootstrap/dist/css/bootstrap.css';
 
+
+
+    
 
 class App extends Component<AuthComponentProps> {
     render() {
@@ -19,7 +22,7 @@ class App extends Component<AuthComponentProps> {
         }
 
         return (
-            <Router>
+            <Router basename={'/onenote-export'}>
                 <div>
                     <NavBar
                         isAuthenticated={this.props.isAuthenticated}

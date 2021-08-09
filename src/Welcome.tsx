@@ -22,7 +22,7 @@ function WelcomeContent(props: WelcomeProps) {
             <div>
                 <h4>You are logged in as {props.user.displayName}!</h4>
                 <p>Choose the notes link in the navigation bar at the top of the page to get started with exporting.</p>
-                <RouterNavLink to="/notes" className="nav-link" exact>Or just click here to get started</RouterNavLink>
+                <RouterNavLink to="./notes" className="nav-link" exact>Or just click here to get started</RouterNavLink>
 
             </div>
         );
