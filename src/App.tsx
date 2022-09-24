@@ -1,6 +1,6 @@
 import withAuthProvider, { AuthComponentProps } from './AuthProvider';
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, Redirect, useHistory } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Navigate } from 'react-router-dom';
 import { Container } from 'reactstrap';
 import NavBar from './NavBar';
 import ErrorMessage from './ErrorMessage';
@@ -30,18 +30,18 @@ class App extends Component<AuthComponentProps> {
                         user={this.props.user} />
                     <Container>
                         {error}
-                        <Route exact path="/"
-                            render={(props) =>
-                                <Welcome {...props}
+                        <Route path="/" 
+                            element={
+                                <Welcome 
                                     isAuthenticated={this.props.isAuthenticated}
                                     user={this.props.user}
                                     authButtonMethod={this.props.login} />
                             } />
-                        <Route exact path="/notes"
-                            render={(props) =>
+                        <Route path="/notes"
+                            element={
                                 this.props.isAuthenticated ?
-                                    <Notes {...props} /> :
-                                    <Redirect to="/" />
+                                    <Notes  /> :
+                                    <Navigate replace to="/" />
                             } />
                     </Container>
                 </div>

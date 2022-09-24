@@ -1,8 +1,7 @@
 import React from 'react';
 import { NavLink as RouterNavLink } from 'react-router-dom';
 import {
-    Button,
-    Jumbotron
+    Button
 } from 'reactstrap';
 
 interface WelcomeProps {
@@ -22,7 +21,7 @@ function WelcomeContent(props: WelcomeProps) {
             <div>
                 <h4>You are logged in as {props.user.displayName}!</h4>
                 <p>Choose the notes link in the navigation bar at the top of the page to get started with exporting.</p>
-                <RouterNavLink to="./notes" className="nav-link" exact>Or just click here to get started</RouterNavLink>
+                <RouterNavLink to="./notes" className="nav-link">Or just click here to get started</RouterNavLink>
 
             </div>
         );
@@ -35,7 +34,7 @@ function WelcomeContent(props: WelcomeProps) {
 export default class Welcome extends React.Component<WelcomeProps, WelcomeState> {
     render() {
         return (
-            <Jumbotron>
+            <div>
                 <h1>OneNote Export</h1>
                 <p className="lead">
                     This app exports your OneNote notes from Microsoft 365 as a zip file containing your notes in html or markdown format and any embedded images and files.
@@ -57,7 +56,7 @@ export default class Welcome extends React.Component<WelcomeProps, WelcomeState>
                     isAuthenticated={this.props.isAuthenticated}
                     user={this.props.user}
                     authButtonMethod={this.props.authButtonMethod} />
-            </Jumbotron>
+            </div>
         );
     }
 }
